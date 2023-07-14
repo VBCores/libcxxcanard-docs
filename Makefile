@@ -1,6 +1,6 @@
 FORMAT = clang-format
 TIDY = clang-tidy
-PROJECT_FILES = $(shell find cyphal -iname *.h -o -iname *.cpp -o -iname *.c)
+PROJECT_FILES = $(shell find examples -iname *.h -o -iname *.cpp -o -iname *.c)
 SHELL = bash
 
 .PHONY: help format lint validate

@@ -1,7 +1,7 @@
-#include "cyphal/cyphal.h"
-#include "cyphal/subscriptions/subscription.h"
-#include "cyphal/providers/LinuxCAN.h"
 #include "cyphal/allocators/o1/o1_allocator.h"
+#include "cyphal/cyphal.h"
+#include "cyphal/providers/LinuxCAN.h"
+#include "cyphal/subscriptions/subscription.h"
 
 #include <iostream>
 
@@ -11,10 +11,7 @@ void Error_Handler() {
     std::cout << "err" << std::endl;
 }
 
-SUBSCRIPTION_CLASS_FIXED_MESSAGE(
-    HBeatReader,
-    uavcan_node_Heartbeat_1_0
-)
+SUBSCRIPTION_CLASS_FIXED_MESSAGE(HBeatReader, uavcan_node_Heartbeat_1_0)
 void HBeatReader::handler(const uavcan_node_Heartbeat_1_0& hbeat, CanardRxTransfer* transfer) {
     std::cout << hbeat.uptime << " " << +transfer->metadata.remote_node_id << std::endl;
 }
