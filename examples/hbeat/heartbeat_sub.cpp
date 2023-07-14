@@ -1,7 +1,7 @@
-#include "cyphal.h"
-#include "subscriptions/subscription.h"
-#include "providers/LinuxCAN.h"
-#include "allocators/o1/o1_allocator.h"
+#include "cyphal/cyphal.h"
+#include "cyphal/subscriptions/subscription.h"
+#include "cyphal/providers/LinuxCAN.h"
+#include "cyphal/allocators/o1/o1_allocator.h"
 
 #include <iostream>
 

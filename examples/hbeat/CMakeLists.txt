@@ -12,7 +12,7 @@ else()
                            "../../libcyphal"
                            ABSOLUTE)
 endif()
-message("Using <${CYPHAL_DIR}> as directory of libcyphal")
+message("${CMAKE_CURRENT_LIST_DIR} | Using <${CYPHAL_DIR}> as directory of libcyphal")
 
 if(DEFINED ENV{<COMMON_LIBS_DIR>})
     set(COMMON_LIBS_DIR $ENV{COMMON_LIBS_DIR})
@@ -23,10 +23,20 @@ else()
 endif()
 message("${CMAKE_CURRENT_LIST_DIR} | Using <${COMMON_LIBS_DIR}> as directory of common Cyphal libs - uavcan, reg, etc.")
 
-include_directories(${CYPHAL_DIR} ${COMMON_LIBS_DIR})
+
+if(DEFINED ENV{<VBLIB_DIR>})
+    set(VBLIB_DIR $ENV{VBLIB_DIR})
+else()
+    get_filename_component(VBLIB_DIR
+            "../../libvoltbro"
+            ABSOLUTE)
+endif()
+message("${CMAKE_CURRENT_LIST_DIR} | Using <${VBLIB_DIR}> as directory of libvoltbro")
+
+include_directories(${VBLIB_DIR} ${CYPHAL_DIR} ${COMMON_LIBS_DIR})
 
 add_subdirectory(${CYPHAL_DIR} ${PROJECT_BINARY_DIR}/build/libcyphal)
 
 add_executable(hbeat_example.run heartbeat_sub.cpp)
 
-target_link_libraries(hbeat_example libcyphal)
+target_link_libraries(hbeat_example.run libcyphal)
