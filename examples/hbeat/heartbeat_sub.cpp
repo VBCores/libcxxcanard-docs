@@ -11,15 +11,13 @@ void Error_Handler() {
     std::cout << "err" << std::endl;
 }
 
-class HBeatReader : public AbstractSubscription<uavcan_node_Heartbeat_1_0> {
-    SUBSCRIPTION_BODY_FIXED_MESSAGE(
-        HBeatReader,
-        uavcan_node_Heartbeat_1_0
-    )
-    void handler(const uavcan_node_Heartbeat_1_0& hbeat, CanardRxTransfer* transfer) {
-        std::cout << hbeat.uptime << " " << +transfer->metadata.remote_node_id << std::endl;
-    }
-};
+SUBSCRIPTION_CLASS_FIXED_MESSAGE(
+    HBeatReader,
+    uavcan_node_Heartbeat_1_0
+)
+void HBeatReader::handler(const uavcan_node_Heartbeat_1_0& hbeat, CanardRxTransfer* transfer) {
+    std::cout << hbeat.uptime << " " << +transfer->metadata.remote_node_id << std::endl;
+}
 
 int main() {
     auto interface = CyphalInterface(99);
