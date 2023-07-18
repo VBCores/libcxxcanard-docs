@@ -27,12 +27,12 @@ void heartbeat() {
 
 uint64_t current_time_millis() {
     using namespace std::chrono;
-    return duration_cast<milliseconds>(system_clock::now()).count();
+    return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
 
 int main() {
-    interface = new CyphalInterface(99);
-    interface.setup<LinuxCAN, O1Allocator>("can0");
+    interface = new CyphalInterface(100);
+    interface->setup<LinuxCAN, O1Allocator>("can0");
     auto reader = HBeatReader(interface);
 
     auto last_hbeat = current_time_millis();

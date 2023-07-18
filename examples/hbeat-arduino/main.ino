@@ -12,6 +12,8 @@ void Error_Handler() {Serial.println("error"); while (1) {};}
 
 SUBSCRIPTION_CLASS_FIXED_MESSAGE(HBeatReader, uavcan_node_Heartbeat_1_0)
 void HBeatReader::handler(const uavcan_node_Heartbeat_1_0& hbeat, CanardRxTransfer* transfer) {
+    Serial.print(+transfer->metadata.remote_node_id);
+    Serial.print(": ");
     Serial.println(hbeat.uptime);
 }
 HBeatReader* reader;
