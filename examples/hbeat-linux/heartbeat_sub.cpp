@@ -18,7 +18,7 @@ void HBeatReader::handler(const uavcan_node_Heartbeat_1_0& hbeat, CanardRxTransf
 
 int main() {
     auto interface = CyphalInterface(99);
-    interface.setup<LinuxCAN, O1Allocator>("vcan0");
+    interface.setup<LinuxCAN, O1Allocator>("can0");
     auto reader = HBeatReader(&interface);
     while (1) {
         interface.loop();
