@@ -8,7 +8,7 @@
 
 #include "uavcan/node/Heartbeat_1_0.h"
 
-void Error_Handler() {std::cout << "error" << std::endl; while(1){}}
+void error_handler() {std::cout << "error" << std::endl; while(1){}}
 
 SUBSCRIPTION_CLASS_FIXED_MESSAGE(HBeatReader, uavcan_node_Heartbeat_1_0)
 void HBeatReader::handler(const uavcan_node_Heartbeat_1_0& hbeat, CanardRxTransfer* transfer) {
