@@ -1,6 +1,3 @@
 [submodule "libcyphal"]
 	path = libcyphal
 	url = git@github.com:VBCores/libcyphal.git
-[submodule "libvoltbro"]
-	path = libvoltbro
-	url = git@github.com:VBCores/libvoltbro.git

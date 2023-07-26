@@ -17,10 +17,18 @@ void error_handler() {
 
 extern "C" {
 void heartbeat() {
-    uavcan_node_Heartbeat_1_0 heartbeat_msg = {.uptime = uptime, .health = {uavcan_node_Health_1_0_NOMINAL}, .mode = {
-            uavcan_node_Mode_1_0_OPERATIONAL}};
-    interface->SEND_MSG(uavcan_node_Heartbeat_1_0, &heartbeat_msg, hbeat_buf, uavcan_node_Heartbeat_1_0_FIXED_PORT_ID_,
-                        &hbeat_transfer_id);
+    uavcan_node_Heartbeat_1_0 heartbeat_msg = {
+        .uptime = uptime,
+        .health = {uavcan_node_Health_1_0_NOMINAL},
+        .mode = {uavcan_node_Mode_1_0_OPERATIONAL}
+    };
+    interface->SEND_MSG(
+        uavcan_node_Heartbeat_1_0,
+        &heartbeat_msg,
+        hbeat_buf,
+        uavcan_node_Heartbeat_1_0_FIXED_PORT_ID_,
+        &hbeat_transfer_id
+    );
     uptime += 1;
 }
 
