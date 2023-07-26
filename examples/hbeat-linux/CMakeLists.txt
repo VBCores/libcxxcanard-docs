@@ -18,7 +18,7 @@ if(DEFINED ENV{<COMMON_LIBS_DIR>})
     set(COMMON_LIBS_DIR $ENV{COMMON_LIBS_DIR})
 else()
     get_filename_component(COMMON_LIBS_DIR
-            "../../libs"
+            "../../libcyphal/libs"
             ABSOLUTE)
 endif()
 message("${CMAKE_CURRENT_LIST_DIR} | Using <${COMMON_LIBS_DIR}> as directory of common Cyphal libs - uavcan, reg, etc.")
