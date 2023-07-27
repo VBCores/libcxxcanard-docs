@@ -17,6 +17,7 @@ CyphalInterface* interface;
 
 // Объявим функцию, которую libcyphal будем вызывать для обработки ошибок
 void error_handler() {Serial.println("error"); while (1) {};}
+uint64_t micros_64() {return micros();}
 
 /*
  * В этой библиотеке много макросов для упрощения написания шаблонного кода - например, SUBSCRIPTION_CLASS_FIXED_MESSAGE
