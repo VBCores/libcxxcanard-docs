@@ -30,7 +30,7 @@ void send_diagnostic(char* string) {              // строка должна �
 }
 
 uint64_t last_send = 0;
-#define MICROS_SEC 1000000000
+#define MICROS_SEC 1000000
 void loop() {
     interface->loop();
 
