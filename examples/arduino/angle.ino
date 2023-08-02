@@ -23,8 +23,8 @@ PREPARE_MESSAGE(uavcan_si_sample_angle_Scalar_1_0, angle)  // создаст ang
 #define ANGLE_PORT_ID 1111
 void send_angle(float radian) {
     uavcan_si_sample_angle_Scalar_1_0 angle_msg = {
-        .radian = radian,
-        .timestamp = {.microsecond=micros_64()}
+        .timestamp = {.microsecond=micros_64()},
+        .radian = radian
     };
     interface->SEND_MSG(uavcan_si_sample_angle_Scalar_1_0, &angle_msg, angle_buf, ANGLE_PORT_ID, &angle_transfer_id);
 }
