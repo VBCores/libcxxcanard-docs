@@ -4,7 +4,7 @@
 
 *TODO*.
 Сейчас пример с комментариями можно найти тут:
-[пример для ардуино с подробными комментами](examples/hbeat-arduino/main.ino).
+[пример для ардуино с подробными комментами](examples/arduino/heartbeat.ino).
 
 ## Платформы
 
@@ -16,7 +16,7 @@
 Туда же скачайте еще вот эти библиотеки - [STM32duino-Libcanard](https://github.com/voltbro/STM32duino-Libcanard2)
 и [VBCoreG4](https://github.com/VBCores/VBCoreG4_arduino_system).
 
-**Пример**: [hbeat-arduino](examples/hbeat-arduino/main.ino).
+**Примеры**: [arduino](examples/arduino).
 
 ### STM32 (CubeIDE)
 
