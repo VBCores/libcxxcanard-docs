@@ -51,21 +51,22 @@ while (1)
 Рабочий кусок cmake для добавления нужных библиотек (предполагается что libcyphal находится в соседней с проектом папке, 
 но пути можно поменять, или брать из env как [тут](examples/hbeat-linux/CMakeLists.txt)). Шаблон:
 ```cmake
-get_filename_component(CYPHAL_DIR "../libcyphal" ABSOLUTE)
+if(DEFINED ENV{<CYPHAL_DIR>})
+    set(CYPHAL_DIR $ENV{CYPHAL_DIR})
+else()
+    get_filename_component(CYPHAL_DIR
+                           "libs/libcyphal"
+                           ABSOLUTE)
+endif()
 message("${CMAKE_CURRENT_LIST_DIR} | Using <${CYPHAL_DIR}> as directory of libcyphal")
-
-get_filename_component(COMMON_LIBS_DIR "../libcyphal/libs" ABSOLUTE)
-message("${CMAKE_CURRENT_LIST_DIR} | Using <${COMMON_LIBS_DIR}> as directory of common Cyphal libs - uavcan, reg, etc.")
-
-include_directories(${CYPHAL_DIR} ${COMMON_LIBS_DIR})
 
 add_subdirectory(${CYPHAL_DIR} ${PROJECT_BINARY_DIR}/build/libcyphal)
 
+include_directories(... ${CYPHAL_DIR} ${COMMON_LIBS_DIR})
 target_link_libraries(YOUR_PROJECT_NAME libcyphal)
 ```
-Так как uavcan и все прочее header-only, их билдить и линковать не надо, достаточно `include_directories`.
+Так как uavcan и все прочее header-only, их билдить и линковать не надо, достаточно `${COMMON_LIBS_DIR}` в `include_directories` (эта переменная создается при `add_subdirectory(${CYPHAL_DIR} ...)`).
 
 **Пример**: [hbeat-linux](examples/hbeat-linux).
 
-**Более сложный пример использования в реальном проекте**: [vbcores/ros/movement_control](https://github.com/voltbro/vbcores/tree/master/ros/src/movement_control). 
-(*TODO*: на самом деле там сейчас еще моя старая реализация, скоро переведу на новую).
+**Более сложный пример использования в реальном проекте**: [vbcores/ros/cyphal_bridge](https://github.com/voltbro/vbcores/tree/master/ros/src/cyphal_bridge/src).
