@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.16)
 project(hbeat_example)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 
 if(DEFINED ENV{<CYPHAL_DIR>})
@@ -11,21 +11,15 @@ else()
                            "../../libcyphal"
                            ABSOLUTE)
 endif()
-message("${CMAKE_CURRENT_LIST_DIR} | Using <${CYPHAL_DIR}> as directory of libcyphal")
-
-if(DEFINED ENV{<COMMON_LIBS_DIR>})
-    set(COMMON_LIBS_DIR $ENV{COMMON_LIBS_DIR})
-else()
-    get_filename_component(COMMON_LIBS_DIR
-            "../../libcyphal/libs"
-            ABSOLUTE)
-endif()
-message("${CMAKE_CURRENT_LIST_DIR} | Using <${COMMON_LIBS_DIR}> as directory of common Cyphal libs - uavcan, reg, etc.")
-
-include_directories(${CYPHAL_DIR} ${COMMON_LIBS_DIR})
+message(STATUS "${CMAKE_CURRENT_LIST_DIR} | Using <${CYPHAL_DIR}> as directory of libcyphal")
 
 add_subdirectory(${CYPHAL_DIR} ${PROJECT_BINARY_DIR}/build/libcyphal)
 
 add_executable(hbeat_example.run heartbeat_sub.cpp)
+
+target_include_directories(hbeat_example.run PUBLIC
+  ${CYPHAL_DIR}
+  ${COMMON_LIBS_DIR}
+)
 
 target_link_libraries(hbeat_example.run libcyphal)

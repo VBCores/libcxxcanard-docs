@@ -1,21 +1,28 @@
+#include <iostream>
+#include <chrono>
+#include <cstdlib>
+#include <memory>
+
 #include "cyphal/allocators/o1/o1_allocator.h"
 #include "cyphal/cyphal.h"
 #include "cyphal/providers/LinuxCAN.h"
 #include "cyphal/subscriptions/subscription.h"
 
-#include <iostream>
-#include <chrono>
-
 #include "uavcan/node/Heartbeat_1_0.h"
 
-void error_handler() {std::cout << "error" << std::endl; while(1){}}
+std::shared_ptr<CyphalInterface> interface;
+
+void error_handler() {std::cout << "error" << std::endl; std::exit(EXIT_FAILURE);}
+
+uint64_t timeMillis() {
+    using namespace std::chrono;
+    return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
 
 SUBSCRIPTION_CLASS_FIXED_MESSAGE(HBeatReader, uavcan_node_Heartbeat_1_0)
 void HBeatReader::handler(const uavcan_node_Heartbeat_1_0& hbeat, CanardRxTransfer* transfer) {
     std::cout << +transfer->metadata.remote_node_id << ": " << hbeat.uptime <<  std::endl;
 }
-
-CyphalInterface* interface;
 
 uint32_t uptime = 0;
 PREPARE_MESSAGE(uavcan_node_Heartbeat_1_0, hbeat)
@@ -25,20 +32,16 @@ void heartbeat() {
     uptime += 1;
 }
 
-uint64_t current_time_millis() {
-    using namespace std::chrono;
-    return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-}
-
 int main() {
-    interface = new CyphalInterface(100);
-    interface->setup<LinuxCAN, O1Allocator>("can0");
+    interface = std::make_shared<CyphalInterface>(100);
+    interface->setup<LinuxCAN, O1Allocator>("can0", 8*1024*10);  // 10 kb memory pool
+
     auto reader = HBeatReader(interface);
 
-    auto last_hbeat = current_time_millis();
+    auto last_hbeat = timeMillis();
     while (1) {
         interface->loop();
-        auto now = current_time_millis();
+        auto now = timeMillis();
         if ( (now - last_hbeat) >= 1000) {
             last_hbeat = now;
             heartbeat();
