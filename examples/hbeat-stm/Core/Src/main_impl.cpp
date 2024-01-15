@@ -1,5 +1,7 @@
 #include "main.h"
 
+#include <memory>
+
 #include "cyphal/cyphal.h"
 #include "cyphal/providers/G4CAN.h"
 #include "cyphal/allocators/sys/sys_allocator.h"
@@ -7,12 +9,17 @@
 
 #include "uavcan/node/Heartbeat_1_0.h"
 
-CyphalInterface *interface;
+std::shared_ptr<CyphalInterface> interface;
 uint32_t uptime = 0;
 PREPARE_MESSAGE(uavcan_node_Heartbeat_1_0, hbeat)
 
 void error_handler() {
     Error_Handler();
+}
+
+uint64_t micros_64() {
+	// Тут не нужен точный таймер, поэтому так
+	return HAL_GetTick() * 1000;
 }
 
 extern "C" {
@@ -33,7 +40,7 @@ void heartbeat() {
 }
 
 void setup_cyphal(FDCAN_HandleTypeDef* handler) {
-    interface = new CyphalInterface(98);
+    interface = std::make_shared<CyphalInterface>(98);
     interface->setup<G4CAN, SystemAllocator>(handler);
 }
 
