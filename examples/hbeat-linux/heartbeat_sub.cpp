@@ -10,6 +10,7 @@
 
 #include "uavcan/node/Heartbeat_1_0.h"
 
+std::byte buffer[sizeof(CyphalInterface) + sizeof(LinuxCAN) + sizeof(O1Allocator)];
 std::shared_ptr<CyphalInterface> interface;
 
 void error_handler() {std::cout << "error" << std::endl; std::exit(EXIT_FAILURE);}
@@ -33,8 +34,9 @@ void heartbeat() {
 }
 
 int main() {
-    interface = std::make_shared<CyphalInterface>(100);
-    interface->setup<LinuxCAN, O1Allocator>("can0", 8*1024*10);  // 10 kb memory pool
+    interface = std::shared_ptr<CyphalInterface>(
+        CyphalInterface::create<LinuxCAN, O1Allocator>(buffer, 100, "can0", 1000)  // 1000 msgs combined pool
+    );
 
     auto reader = HBeatReader(interface);
 
@@ -43,6 +45,7 @@ int main() {
         interface->loop();
         auto now = timeMillis();
         if ( (now - last_hbeat) >= 1000) {
+            std::cout << "Sending heartbeat " << uptime << ". Queue size: " << interface->queue_size() << std::endl;
             last_hbeat = now;
             heartbeat();
         }

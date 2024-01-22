@@ -51,5 +51,6 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "*.tpp": "cpp"
-    }
+    },
+    "C_Cpp.intelliSenseMemoryLimit": 1024
 }
