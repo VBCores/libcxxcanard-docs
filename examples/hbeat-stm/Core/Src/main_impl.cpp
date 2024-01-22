@@ -9,7 +9,9 @@
 
 #include "uavcan/node/Heartbeat_1_0.h"
 
+std::byte buffer[sizeof(CyphalInterface) + sizeof(G4CAN) + sizeof(SystemAllocator)];
 std::shared_ptr<CyphalInterface> interface;
+
 uint32_t uptime = 0;
 PREPARE_MESSAGE(uavcan_node_Heartbeat_1_0, hbeat)
 
@@ -40,8 +42,9 @@ void heartbeat() {
 }
 
 void setup_cyphal(FDCAN_HandleTypeDef* handler) {
-    interface = std::make_shared<CyphalInterface>(98);
-    interface->setup<G4CAN, SystemAllocator>(handler);
+	interface = std::shared_ptr<CyphalInterface>(
+		CyphalInterface::create<G4CAN, SystemAllocator>(buffer, 98, handler, 400)  // 400 msgs combined pool
+	);
 }
 
 void cyphal_loop() {
