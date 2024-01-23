@@ -8,42 +8,40 @@
 #include "cyphal/subscriptions/subscription.h"
 
 #include "uavcan/node/Heartbeat_1_0.h"
+TYPE_ALIAS(HBeat, uavcan_node_Heartbeat_1_0)
 
 std::byte buffer[sizeof(CyphalInterface) + sizeof(G4CAN) + sizeof(SystemAllocator)];
 std::shared_ptr<CyphalInterface> interface;
 
-uint32_t uptime = 0;
-PREPARE_MESSAGE(uavcan_node_Heartbeat_1_0, hbeat)
 
-void error_handler() {
-    Error_Handler();
-}
-
-uint64_t micros_64() {
-	// Тут не нужен точный таймер, поэтому так
-	return HAL_GetTick() * 1000;
-}
+void error_handler() { Error_Handler(); }
+// Тут не нужен точный таймер, поэтому так
+uint64_t micros_64() { return HAL_GetTick() * 1000; }
+UtilityConfig utilities(micros_64, error_handler);
 
 extern "C" {
 void heartbeat() {
+	static uint8_t hbeat_buffer[HBeat::buffer_size];
+	static CanardTransferID hbeat_transfer_id = 0;
+	static uint32_t uptime = 0;
     uavcan_node_Heartbeat_1_0 heartbeat_msg = {
         .uptime = uptime,
         .health = {uavcan_node_Health_1_0_NOMINAL},
         .mode = {uavcan_node_Mode_1_0_OPERATIONAL}
     };
-    interface->SEND_MSG(
-        uavcan_node_Heartbeat_1_0,
-        &heartbeat_msg,
-        hbeat_buf,
-        uavcan_node_Heartbeat_1_0_FIXED_PORT_ID_,
-        &hbeat_transfer_id
-    );
+    interface->send_cyphal_default_msg<HBeat>(
+		&heartbeat_msg,
+		hbeat_buffer,
+		uavcan_node_Heartbeat_1_0_FIXED_PORT_ID_,
+		&hbeat_transfer_id
+	);
     uptime += 1;
 }
 
 void setup_cyphal(FDCAN_HandleTypeDef* handler) {
 	interface = std::shared_ptr<CyphalInterface>(
-		CyphalInterface::create<G4CAN, SystemAllocator>(buffer, 98, handler, 400)  // 400 msgs combined pool
+		         // memory location, node_id, fdcan handler, messages memory pool, utils ref
+		CyphalInterface::create<G4CAN, SystemAllocator>(buffer, 98, handler, 400, utilities)
 	);
 }
 
@@ -52,3 +50,4 @@ void cyphal_loop() {
 }
 
 }
+
