@@ -5,27 +5,30 @@
 
 #include <array>
 
+TYPE_ALIAS(ArrayFloat, uavcan_primitive_array_Real32_1_0)
+
 CanFD canfd;
 FDCAN_HandleTypeDef* hfdcan1;
 
-CyphalInterface* interface;
+std::shared_ptr<CyphalInterface> interface;
 
 void error_handler() {Serial.println("error"); while (1) {};}
 uint64_t micros_64() {return micros();}
+UtilityConfig utilities(micros_64, error_handler);
 
 void setup() {
     canfd.can_init();
     hfdcan1 = canfd.get_hfdcan();
 
-    interface = new CyphalInterface(99);
-    interface->setup<G4CAN, SystemAllocator>(hfdcan1);
+    interface = CyphalInterface::create_heap<G4CAN, O1Allocator>(97, hfdcan1, 200, utilities);
 }
 
-PREPARE_MESSAGE(uavcan_primitive_array_Real32_1_0, array)  // создаст array_buf, array_transfer_id
 #define ARRAY_PORT_ID 2222
 template<typename Container>
 void send_numbers(Container& container) {
-    uavcan_primitive_array_Real32_1_0 array_msg = {};
+    static uint8_t array_buf[ArrayFloat::buffer_size];
+    static CanardTransferID array_transfer_id = 0;
+    ArrayFloat::Type array_msg = {};
     array_msg.value.count = container.size();
 
     float* start = array_msg.value.elements;
@@ -34,7 +37,7 @@ void send_numbers(Container& container) {
         *(start + pos) = elem;
         pos++;
     }
-    interface->SEND_MSG(uavcan_primitive_array_Real32_1_0, &array_msg, array_buf, ARRAY_PORT_ID, &array_transfer_id);
+    interface->send_msg<ArrayFloat>(&array_msg, array_buf, ARRAY_PORT_ID, &array_transfer_id);
 }
 
 uint64_t last_send = 0;

@@ -3,30 +3,34 @@
 #include <cyphal.h>
 #include <uavcan/primitive/String_1_0.h>
 
+TYPE_ALIAS(CyphalString, uavcan_primitive_String_1_0)
+
+
 CanFD canfd;
 FDCAN_HandleTypeDef* hfdcan1;
 
-CyphalInterface* interface;
+std::shared_ptr<CyphalInterface> interface;
 
 void error_handler() {Serial.println("error"); while (1) {};}
 uint64_t micros_64() {return micros();}
+UtilityConfig utilities(micros_64, error_handler);
 
 void setup() {
     canfd.can_init();
     hfdcan1 = canfd.get_hfdcan();
 
-    interface = new CyphalInterface(99);
-    interface->setup<G4CAN, SystemAllocator>(hfdcan1);
+    interface = CyphalInterface::create_heap<G4CAN, O1Allocator>(97, hfdcan1, 200, utilities);
 }
 
-const CanardPortID SD_PORT = 176;                 // 'S'elf 'D'iagnostic - 8368, 8368 % 8192 = 176
-PREPARE_MESSAGE(uavcan_primitive_String_1_0, sd)  // создаст sd_buf, sd_transfer_id
-void send_diagnostic(char* string) {              // строка должна быть нуль-терминирована
+const CanardPortID SD_PORT = 176;    // 'S'elf 'D'iagnostic - 8368, 8368 % 8192 = 176
+void send_diagnostic(char* string) { // строка должна быть нуль-терминирована
+    static uint8_t sd_buf[CyphalString::buffer_size];
+    static CanardTransferID sd_transfer_id = 0;
     uavcan_primitive_String_1_0 sd = {};
     sprintf((char*)sd.value.elements, "%s", string);
     sd.value.count = strlen((char*)sd.value.elements);
 
-    interface->SEND_MSG(uavcan_primitive_String_1_0, &sd, sd_buf, SD_PORT, &sd_transfer_id);
+    interface->send_msg<CyphalString>(&sd, sd_buf, SD_PORT, &sd_transfer_id);
 }
 
 uint64_t last_send = 0;

@@ -3,30 +3,33 @@
 #include <cyphal.h>
 #include <uavcan/si/sample/angle/Scalar_1_0.h>
 
+TYPE_ALIAS(AngleScalar, uavcan_si_sample_angle_Scalar_1_0)
+
 CanFD canfd;
 FDCAN_HandleTypeDef* hfdcan1;
 
-CyphalInterface* interface;
+std::shared_ptr<CyphalInterface> interface;
 
 void error_handler() {Serial.println("error"); while (1) {};}
 uint64_t micros_64() {return micros();}
+UtilityConfig utilities(micros_64, error_handler);
 
 void setup() {
     canfd.can_init();
     hfdcan1 = canfd.get_hfdcan();
 
-    interface = new CyphalInterface(99);
-    interface->setup<G4CAN, SystemAllocator>(hfdcan1);
+    interface = CyphalInterface::create_heap<G4CAN, O1Allocator>(97, hfdcan1, 200, utilities);
 }
 
-PREPARE_MESSAGE(uavcan_si_sample_angle_Scalar_1_0, angle)  // создаст angle_buf, angle_transfer_id
 #define ANGLE_PORT_ID 1111
 void send_angle(float radian) {
-    uavcan_si_sample_angle_Scalar_1_0 angle_msg = {
+    static uint8_t angle_buffer[AngleScalar::buffer_size];
+    static CanardTransferID angle_transfer_id = 0;
+    AngleScalar::Type angle_msg = {
         .timestamp = {.microsecond=micros_64()},
         .radian = radian
     };
-    interface->SEND_MSG(uavcan_si_sample_angle_Scalar_1_0, &angle_msg, angle_buf, ANGLE_PORT_ID, &angle_transfer_id);
+    interface->send_msg<AngleScalar>(&angle_msg, angle_buffer, ANGLE_PORT_ID, &angle_transfer_id);
 }
 
 uint64_t last_send = 0;
