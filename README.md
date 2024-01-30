@@ -4,7 +4,7 @@
 
 *TODO*.
 Сейчас пример с комментариями можно найти тут:
-[пример для ардуино с подробными комментами](examples/arduino/heartbeat.ino).
+[пример для ардуино с подробными комментами](examples/arduino/heartbeat/heartbeat.ino).
 
 ## Платформы
 
@@ -20,13 +20,13 @@
 
 ### STM32 (CubeIDE)
 
-Клонируйте данный репозиторий в любую папку. Я обычно добавляю в папку `Drivers` и добавляю путь `Drivers/libcyphal` в `include directories` в настройках билда.
-Папку `libcyphal/src` надо исключить из билда (правая кнопка - exclude). Все, можно пользоваться.
+Клонируйте данный репозиторий в любую папку. Я обычно добавляю в папку `Drivers` и добавляю путь `Drivers/libcxxcanard` в `include directories` в настройках билда.
+Папку `libcxxcanard/src` надо исключить из билда (*правая кнопка -> resourcce configurations -> exclude*). Все, можно пользоваться.
 
 **Пример** (полный проект): [hbeat-stm](examples/hbeat-stm).
 
 Самые важные части примера:
-- **Файл** где используется эта библиотека: [main_impl.cpp](examples/hbeat-stm/Core/Src/main_impl.cpp)
+- **Файл** где используется эта библиотека: [main_impl.cpp](examples/hbeat-stm/Core/Src/main_impl.cpp). Тут инициализация, отправка сообщений и прочее
 - Код в main, вызывающий контрольный цикл и посылающий heartbeat:
 ```c
 uint32_t last_hbeat = HAL_GetTick();
@@ -55,18 +55,18 @@ if(DEFINED ENV{<CYPHAL_DIR>})
     set(CYPHAL_DIR $ENV{CYPHAL_DIR})
 else()
     get_filename_component(CYPHAL_DIR
-                           "libs/libcyphal"
+                           "libs/libcxxcanard"
                            ABSOLUTE)
 endif()
-message("${CMAKE_CURRENT_LIST_DIR} | Using <${CYPHAL_DIR}> as directory of libcyphal")
+message("${CMAKE_CURRENT_LIST_DIR} | Using <${CYPHAL_DIR}> as directory of libcxxcanard")
 
-add_subdirectory(${CYPHAL_DIR} ${PROJECT_BINARY_DIR}/build/libcyphal)
+add_subdirectory(${CYPHAL_DIR} ${PROJECT_BINARY_DIR}/build/libcxxcanard)
 
 include_directories(... ${CYPHAL_DIR} ${COMMON_LIBS_DIR})
-target_link_libraries(YOUR_PROJECT_NAME libcyphal)
+target_link_libraries(YOUR_PROJECT_NAME libcxxcanard)
 ```
 Так как uavcan и все прочее header-only, их билдить и линковать не надо, достаточно `${COMMON_LIBS_DIR}` в `include_directories` (эта переменная создается при `add_subdirectory(${CYPHAL_DIR} ...)`).
 
 **Пример**: [hbeat-linux](examples/hbeat-linux).
 
-**Более сложный пример использования в реальном проекте**: [vbcores/ros/cyphal_bridge](https://github.com/voltbro/vbcores/tree/master/ros/src/cyphal_bridge/src).
+**Более сложный пример использования в реальном проекте**: TODO (выбрать).
