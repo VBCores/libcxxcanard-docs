@@ -8,12 +8,12 @@ if(DEFINED ENV{<CYPHAL_DIR>})
     set(CYPHAL_DIR $ENV{CYPHAL_DIR})
 else()
     get_filename_component(CYPHAL_DIR
-                           "../../libcyphal"
+                           "../../libcxxcanard"
                            ABSOLUTE)
 endif()
-message(STATUS "${CMAKE_CURRENT_LIST_DIR} | Using <${CYPHAL_DIR}> as directory of libcyphal")
+message(STATUS "${CMAKE_CURRENT_LIST_DIR} | Using <${CYPHAL_DIR}> as directory of libcxxcanard")
 
-add_subdirectory(${CYPHAL_DIR} ${PROJECT_BINARY_DIR}/build/libcyphal)
+add_subdirectory(${CYPHAL_DIR} ${PROJECT_BINARY_DIR}/build/libcxxcanard)
 
 add_executable(hbeat_example.run heartbeat_sub.cpp)
 
@@ -22,4 +22,4 @@ target_include_directories(hbeat_example.run PUBLIC
   ${COMMON_LIBS_DIR}
 )
 
-target_link_libraries(hbeat_example.run libcyphal)
+target_link_libraries(hbeat_example.run libcxxcanard)

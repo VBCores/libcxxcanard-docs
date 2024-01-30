@@ -37,7 +37,7 @@ void heartbeat() {
     static uint8_t hbeat_buffer[HBeat::buffer_size];
     static CanardTransferID hbeat_transfer_id = 0;
     HBeat::Type heartbeat_msg = {.uptime = uptime, .health = {uavcan_node_Health_1_0_NOMINAL}, .mode = {uavcan_node_Mode_1_0_OPERATIONAL}};
-    interface->send_cyphal_default_msg<HBeat>(&heartbeat_msg, hbeat_buffer, uavcan_node_Heartbeat_1_0_FIXED_PORT_ID_, &hbeat_transfer_id);
+    interface->send_msg<HBeat>(&heartbeat_msg, hbeat_buffer, uavcan_node_Heartbeat_1_0_FIXED_PORT_ID_, &hbeat_transfer_id);
     uptime += 1;
 }
 
