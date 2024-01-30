@@ -18,7 +18,6 @@ uint64_t micros_64() {
 }
 UtilityConfig utilities(micros_64, error_handler);
 
-std::byte buffer[sizeof(CyphalInterface) + sizeof(LinuxCAN) + sizeof(O1Allocator)];
 std::shared_ptr<CyphalInterface> interface;
 
 class HBeatReader: public AbstractSubscription<HBeat> {
@@ -42,9 +41,7 @@ void heartbeat() {
 }
 
 int main() {
-    interface = std::shared_ptr<CyphalInterface>(
-        CyphalInterface::create<LinuxCAN, O1Allocator>(buffer, 100, "can0", 1000, utilities)  // 1000 msgs combined pool
-    );
+    interface = CyphalInterface::create_heap<LinuxCAN, O1Allocator>(100, "can0", 1000, utilities);
 
     auto reader = HBeatReader(interface);
 
