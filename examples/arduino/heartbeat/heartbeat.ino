@@ -1,8 +1,15 @@
+#include <memory>
 #include <VBCoreG4_arduino_system.h>   // системный хэдер
 #include <stm32g4xx_hal_fdcan.h>       // системный хэдер
 #include <Libcanard2.h>                // базовые библиотеки (canard, uavcan, etc.)
-#include <cyphal.h>                    // сам libcyphal
+#include <cyphal.h>                    // сам libcxxcanard
 #include <uavcan/node/Heartbeat_1_0.h> // тип сообщения, которе будем использовать
+
+// С++ обертка вокруг кучи libcanard-типов
+TYPE_ALIAS(HBeat, uavcan_node_Heartbeat_1_0)
+
+// Во избежание аллокаций на куче
+std::byte buffer[sizeof(CyphalInterface) + sizeof(G4CAN) + sizeof(O1Allocator)];
 
 // Настройка fdcan из VBCoreG4
 CanFD canfd;
@@ -13,50 +20,26 @@ uint32_t uptime = 0;
 HardwareTimer *timer = new HardwareTimer(TIM3);
 
 // Класс с API для доступа к cyphal
-CyphalInterface* interface;
+std::shared_ptr<CyphalInterface> interface;
 
 // Объявим функцию, которую libcyphal будем вызывать для обработки ошибок
 void error_handler() {Serial.println("error"); while (1) {};}
 uint64_t micros_64() {return micros();}
+UtilityConfig utilities(micros_64, error_handler);
 
-/*
- * В этой библиотеке много макросов для упрощения написания шаблонного кода - например, SUBSCRIPTION_CLASS_FIXED_MESSAGE
- * Куча других полезных макросов для объявления обработчиков есть в cyphal/subscriptions/subscription.h
- * Без макросов это можно сделать так:
-
-class HBeatReader : public AbstractSubscription<uavcan_node_Heartbeat_1_0> {
-private:
-    inline void deserialize(uavcan_node_Heartbeat_1_0* object, CanardRxTransfer* transfer) {
-        interface->DESERIALIZE_TRANSFER(uavcan_node_Heartbeat_1_0, object, transfer);
-    }
+class HBeatReader: public AbstractSubscription<HBeat> {
 public:
-    HBeatReader(CyphalInterface* interface)
-        : AbstractSubscription(
-            interface,
-            CanardTransferKindMessage,
-            uavcan_node_Heartbeat_1_0_FIXED_PORT_ID_,
-            uavcan_node_Heartbeat_1_0_EXTENT_BYTES_
-        ){};
-    void handler(
-        const uavcan_node_Heartbeat_1_0& hbeat,
-        CanardRxTransfer* transfer
-    ) override;
+    HBeatReader(InterfacePtr interface): AbstractSubscription<HBeat>(interface,
+        // Тут параметры - port_id, transfer kind или только port_id
+        uavcan_node_Heartbeat_1_0_FIXED_PORT_ID_
+    ) {};
+    void handler(const uavcan_node_Heartbeat_1_0& hbeat, CanardRxTransfer* transfer) override {
+        Serial.print(+transfer->metadata.remote_node_id);
+        Serial.print(": ");
+        Serial.println(hbeat.uptime);
+    }
 };
 
- * Как можно видеть, тут все еще остался макрос DESERIALIZE_TRANSFER, но его я уже рекомендую точно не избегать, тк это куча шаблонного кода
- * Список шаблонных функций и макросов к ним смотри в cyphal/cyphal.tpp
- * Позже я их задокументирую.
- */
-
-// Макрос, объявляющий класс HBeatReader, обрабатывающий ПОЛУЧЕНИЕ uavcan_node_Heartbeat_1_0
-SUBSCRIPTION_CLASS_FIXED_MESSAGE(HBeatReader, uavcan_node_Heartbeat_1_0)
-// Если все же пользоваться макросами (что я рекомендую), то остается только реализовать функцию-обработчик получения сообщений:
-// Сигнатура у них всегда (const ТИП_СООБЩЕНИЯ&, CanardRxTransfer*). Обратите внимание, что первое это константная ссылка, а второе указатель
-void HBeatReader::handler(const uavcan_node_Heartbeat_1_0& hbeat, CanardRxTransfer* transfer) {
-    Serial.print(+transfer->metadata.remote_node_id);
-    Serial.print(": ");
-    Serial.println(hbeat.uptime);
-}
 HBeatReader* reader;
 
 void setup() {
@@ -64,8 +47,10 @@ void setup() {
     canfd.can_init();
     hfdcan1 = canfd.get_hfdcan();
 
-    // "Запускаем" cyphal, id нашего узла будет 99
-    interface = new CyphalInterface(99);
+    interface = std::shared_ptr<CyphalInterface>(
+        // memory location, node_id, fdcan handler, messages memory pool, utils ref
+        CyphalInterface::create<LinuxCAN, O1Allocator>(buffer, 97, hfdcan1, 200, utilities)
+    );
     // Инициализация - мы находимся на G4, алокатор памяти - системный
     // NOTE: в следующей версии, setup может пропасть и достаточно будет просто сделать
     // new CyphalInterface<G4CAN, SystemAllocator>(99, hfdcan1);

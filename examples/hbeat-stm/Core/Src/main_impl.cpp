@@ -10,7 +10,6 @@
 #include "uavcan/node/Heartbeat_1_0.h"
 TYPE_ALIAS(HBeat, uavcan_node_Heartbeat_1_0)
 
-std::byte buffer[sizeof(CyphalInterface) + sizeof(G4CAN) + sizeof(O1Allocator)];
 std::shared_ptr<CyphalInterface> interface;
 
 void error_handler() { Error_Handler(); }
@@ -39,10 +38,8 @@ void heartbeat() {
 }
 
 void setup_cyphal(FDCAN_HandleTypeDef* handler) {
-	interface = std::shared_ptr<CyphalInterface>(
-		// memory location, node_id, fdcan handler, messages memory pool, utils ref
-		CyphalInterface::create<G4CAN, O1Allocator>(buffer, 98, handler, 400, utilities)
-	);
+	// node_id, fdcan handler, messages memory pool, utils ref
+	interface = CyphalInterface::create_heap<G4CAN, O1Allocator>(98, handler, 400, utilities);
 }
 
 void cyphal_loop() {
